@@ -11,7 +11,24 @@ use Illuminate\Support\Facades\Hash;
 class AuthController extends Controller
 {
     public function login(Request $request) {
+        $validated = Validator::make($request->all(),[
+            'email' => 'required|email',
+            'password' => 'required|min:8|confirmed',
+        ]);
+
+        if($validated->fails()){
+            response()->json([
+                'errors' => $validated->errors()
+            ]);
+        }
+
         $user = User::where('email', $request->email)->first();
+
+        if(!$user){
+            return response()->json([
+                'message' => 'user not found'
+            ]);
+        }
 
         if (Hash::check($request->password, $user->password)) {
             $token = $user->createToken('auth-token');
@@ -20,10 +37,14 @@ class AuthController extends Controller
                 'user' => $user,
                 'token' => $token
             ]);
+        } else {
+            return response()->json([
+                'message' => 'password not correct'
+            ]);
         }
 
         return response()->json([
-            'message' => 'email or password not correct'
+            'message' => 'something went wrong while signing in'
         ]);
     }
 
