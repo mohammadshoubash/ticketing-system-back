@@ -182,7 +182,7 @@ class TicketController extends Controller
     /**
      * Close the Ticket.
      */
-    public function close() {
+    public function close(Request $request){ {
         try {
             $validated = Validator::make($request->all(), [
                 $request->ticket_id => 'required',
@@ -211,12 +211,13 @@ class TicketController extends Controller
                 'message' => $e->getMessage()
             ]);
         }
-    }
+    }}
 
     /**
      * Re-open the specified ticket.
      */
-    public function reopen(Request $request){
+   
+     public function reopen(Request $request){
         try {
             $validated = Validator::make($request->all(), [
                 $request->ticket_id => 'required',
