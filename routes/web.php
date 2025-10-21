@@ -1,7 +1,6 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use App\Jobs\RemoveTokens;
+use Illuminate\Support\Facades\Schedule;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Schedule::job(new RemoveTokens)->dailyAt('00:00');

@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use Exception;
 use App\Models\User;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
+use Laravel\Sanctum\PersonalAccessToken;
+use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
@@ -89,5 +91,19 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'you logout successfully'
         ]);
+    }
+
+    public function removeTokens(){
+        try {
+            \Laravel\Sanctum\PersonalAccessToken::truncate();
+
+            return response()->json([
+                'message' => 'tokens deleted successfully'
+            ]);
+        } catch(\Exception $e) {
+            response()->json([
+                'message' => $e->getMessage()
+            ]);
+        }
     }
 }
