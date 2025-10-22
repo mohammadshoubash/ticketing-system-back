@@ -37,8 +37,8 @@ class TicketController extends Controller
             'type' => 'required|in:voice,non-voice',
             'priority' => 'required|string',
             'comment' => 'nullable|string',
-            'attachment' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:10240',
             'country' => 'required|string',
+            'attachment' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:10240',
             'language' => 'required|string',
             'form_fields' => 'nullable|array',
         ]);
