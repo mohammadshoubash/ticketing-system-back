@@ -14,7 +14,7 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::put('tickets/{id}/close', [TicketController::class, 'close']);
 });
 
-Route::apiResource('tickets', TicketController::class);
+Route::apiResource('tickets', TicketController::class)->middleware('auth:sanctum');
 
 // Tokens
 Route::delete('/delete-tokens', [AuthController::class, 'removeTokens']);

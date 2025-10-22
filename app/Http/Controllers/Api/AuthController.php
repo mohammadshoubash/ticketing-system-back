@@ -56,13 +56,13 @@ class AuthController extends Controller
             'email' => 'required|email',
             'password' => 'required|min:8|confirmed',
         ]);
-
+       
         if($validated->fails()){
             return response()->json([
                 'errors' => $validated->errors()
             ]);
         }
-
+       
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
