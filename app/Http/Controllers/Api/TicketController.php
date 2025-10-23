@@ -148,113 +148,132 @@ class TicketController extends Controller
     /**
      * Mark the target ticket as resolve.
      */
-    public function resolve(Request $request){
+    public function resolve(Request $request, $id){
         try {
-            $validated = Validator::make($request->all(), [
-                $request->ticket_id => 'required',
-                $request->comment => 'nullable'
+            $validator = Validator::make($request->all(), [
+                'comment' => 'nullable|string'
             ]);
 
-            $ticket = Ticket::find($request->ticket_id);
-
-            if(!$ticket){
-                return response()->json([
-                    'message' => 'ticket is not found'
-                ]);
+            if ($validator->fails()) {
+                return response()->json(['errors' => $validator->errors()], 422);
             }
 
-            $ticket->update([
-                'comment' => $request->comment,
-                'status' => 'Resolved'
-            ]);
+            $ticket = Ticket::where('id', $id)
+                           ->where('user_id', $request->user()->id)
+                           ->firstOrFail();
+
+            if ($ticket->status === 'Resolved' || $ticket->status === 'Closed') {
+                return response()->json([
+                    'message' => 'Ticket is already resolved or closed'
+                ], 400);
+            }
+
+            $updateData = ['status' => 'Resolved'];
+            if ($request->has('comment')) {
+                $updateData['comment'] = $request->comment;
+            }
+
+            $ticket->update($updateData);
 
             return response()->json([
-                'message' => 'successfully resolved'
+                'message' => 'Ticket successfully resolved'
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
-                'message' => $e->getMessage()
-            ]);
+                'message' => 'Failed to resolve ticket: ' . $e->getMessage()
+            ], 500);
         }
     }
 
     /**
      * Close the Ticket.
      */
-    public function close(Request $request){ {
+    public function close(Request $request, $id){
         try {
-            $validated = Validator::make($request->all(), [
-                $request->ticket_id => 'required',
-                $request->comment => 'nullable'
+            $validator = Validator::make($request->all(), [
+                'comment' => 'nullable|string'
             ]);
 
-            $ticket = Ticket::find($request->ticket_id);
-
-            if(!$ticket){
-                return response()->json([
-                    'message' => 'ticket is not found'
-                ]);
+            if ($validator->fails()) {
+                return response()->json(['errors' => $validator->errors()], 422);
             }
 
-            $ticket->update([
-                'comment' => $request->comment,
-                'status' => 'Closed'
-            ]);
+            $ticket = Ticket::where('id', $id)
+                           ->where('user_id', $request->user()->id)
+                           ->firstOrFail();
+
+            if ($ticket->status === 'Closed') {
+                return response()->json([
+                    'message' => 'Ticket is already closed'
+                ], 400);
+            }
+
+            $updateData = ['status' => 'Closed'];
+            if ($request->has('comment')) {
+                $updateData['comment'] = $request->comment;
+            }
+
+            $ticket->update($updateData);
 
             return response()->json([
-                'message' => 'successfully resolved'
+                'message' => 'Ticket successfully closed'
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
-                'message' => $e->getMessage()
-            ]);
+                'message' => 'Failed to close ticket: ' . $e->getMessage()
+            ], 500);
         }
-    }}
+    }
 
     /**
      * Re-open the specified ticket.
      */
-   
-     public function reopen(Request $request){
+    public function reopen(Request $request, $id){
         try {
-            $validated = Validator::make($request->all(), [
-                $request->ticket_id => 'required',
-                $request->comment => 'nullable',
-                $request->attachment => 'nullable|file'
+            $validator = Validator::make($request->all(), [
+                'comment' => 'nullable|string',
+                'attachment' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:10240'
             ]);
 
-            $ticket = Ticket::find($request->ticket_id);
-
-            if(!$ticket){
-                return response()->json([
-                    'message' => 'ticket is not found'
-                ]);
+            if ($validator->fails()) {
+                return response()->json(['errors' => $validator->errors()], 422);
             }
 
-            if($ticket->status == 'Closed'){
-                $filePath = '';
+            $ticket = Ticket::where('id', $id)
+                           ->where('user_id', $request->user()->id)
+                           ->firstOrFail();
 
-                if($request->file('attachment')){
-                    $filePath = $request->file('attachment')->store('files');
+            if ($ticket->status !== 'Closed') {
+                return response()->json([
+                    'message' => 'Only closed tickets can be reopened'
+                ], 400);
+            }
+
+            $updateData = ['status' => 'Open'];
+            if ($request->has('comment')) {
+                $updateData['comment'] = $request->comment;
+            }
+
+            if ($request->hasFile('attachment')) {
+                // Delete old attachment if exists
+                if ($ticket->attachment) {
+                    Storage::disk('public')->delete($ticket->attachment);
                 }
-
-                $ticket->update([
-                    'comment' => $request->comment,
-                    'status' => 'Open',
-                    'attachment' => $filePath
-                ]);
-
-                return response()->json([
-                    'message' => 'successfully re-open the ticket'
-                ]);
+                $updateData['attachment'] = $request->file('attachment')->store('attachments', 'public');
             }
+
+            $ticket->update($updateData);
+
+            return response()->json([
+                'message' => 'Ticket successfully reopened'
+            ]);
 
         } catch (\Exception $e) {
             return response()->json([
-                'message' => $e->getMessage()
-            ]);
+                'message' => 'Failed to reopen ticket: ' . $e->getMessage()
+            ], 500);
         }
     }
 }

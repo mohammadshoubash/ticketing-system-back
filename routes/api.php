@@ -12,6 +12,7 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::put('tickets/{id}/resolve', [TicketController::class, 'resolve']);
     Route::put('tickets/{id}/close', [TicketController::class, 'close']);
+    Route::put('tickets/{id}/reopen', [TicketController::class, 'reopen']);
 });
 
 Route::apiResource('tickets', TicketController::class)->middleware('auth:sanctum');
