@@ -75,11 +75,12 @@ class TicketController extends Controller
     public function show(Request $request, string $id)
     {
         $user = $request->user();
+
         $ticket = Ticket::where('id', $id)
-                       ->where('user_id', $user->id)
+                    // user can see his own tickets , so to fix it we need to make if statement
+                    //    ->where('user_id', $user->id)
                        ->with('user')
                        ->firstOrFail();
-
         return response()->json($ticket);
     }
 
@@ -169,6 +170,7 @@ class TicketController extends Controller
             }
 
             $updateData = ['status' => 'Resolved'];
+
             if ($request->has('comment')) {
                 $updateData['comment'] = $request->comment;
             }

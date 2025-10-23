@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('country');
             $table->string('language');
             $table->json('form_fields')->nullable(); // Store custom form fields as JSON
-            $table->enum('status', ['Open', 'In Progress', 'Closed'])->default('Open');
+            $table->enum('status', ['Open', 'In Progress', 'Closed', 'Resolved'])->default('Open');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });

@@ -153,8 +153,9 @@ class TicketSeeder extends Seeder
         $user = User::first();
         if (!$user) {
             $user = User::factory()->create([
-                'name' => 'Test User',
-                'email' => 'test@example.com',
+                'name' => 'mohammad',
+                'email' => 'mohammad@gmail.com',
+                'password' => bcrypt('12341234')
             ]);
         }
 
